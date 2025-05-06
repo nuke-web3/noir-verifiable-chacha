@@ -5,8 +5,8 @@ mod tests;
 pub mod constants;
 use constants::{HASH_LEN, HEADER_LEN, KEY_LEN, NONCE_LEN};
 
-/// Chacha20 verifiable encryption
-pub fn v_chacha<let N: u32>(
+/// ChaCha20 verifiable encryption
+pub fn v_chacha20<let N: u32>(
     key: [u8; KEY_LEN],
     nonce: [u8; NONCE_LEN],
     counter: u32,

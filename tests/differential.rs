@@ -104,7 +104,7 @@ fn test_prop_v_chacha_8_bytes() {
                 ("plaintext".to_string(), vector.to_noir()),
             ]);
 
-            let result = runner.run("test_v_chacha_8_bytes", input).unwrap().unwrap();
+            let result = runner.run("test_v_chacha20_8_bytes", input).unwrap().unwrap();
 
             let key_hash: [u8; HASH_LEN] = Sha256::digest(&key).into();
             let plaintext_bytes: &[u8; 8] = unsafe { std::mem::transmute(&vector) };
