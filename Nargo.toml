@@ -1,0 +1,11 @@
+[package]
+name = "verifiable_chacha"
+type = "lib"
+authors = ["nuke-web3"]
+compiler_version = "1.0"
+
+[dependencies]
+# sha256 = { tag = "TODO", git = "https://github.com/nuke-web3/noir-sha256" }
+# chacha20 = { tag = "TODO", git = "https://github.com/nuke-web3/noir-chacha20" }
+sha256 = { path = "../sha256" }
+chacha20 = { path = "../chacha20/crates/chacha20" }
