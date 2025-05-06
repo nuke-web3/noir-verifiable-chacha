@@ -7,23 +7,22 @@ use constants::{HASH_LEN, HEADER_LEN, KEY_LEN, NONCE_LEN};
 
 /// Chacha20 verifiable encryption
 pub fn v_chacha<let N: u32>(
-    key: [u32; 8],
-    nonce: [u32; 3],
+    key: [u8; KEY_LEN],
+    nonce: [u8; NONCE_LEN],
     counter: u32,
-    plaintext: [u32; N],
-) -> [u8; HEADER_LEN + (N * 4)] {
-    let key_bytes = u32_array_to_u8_array(key);
-    let key_hash = sha256_var(key_bytes, N as u64);
+    plaintext: [u8; N],
+) -> [u8; HEADER_LEN + N] {
+    let key_hash = sha256_var(key, N as u64);
 
-    let plaintext_bytes = u32_array_to_u8_array(plaintext);
-    let plaintext_hash = sha256_var(plaintext_bytes, N as u64);
+    let plaintext_hash = sha256_var(plaintext, N as u64);
 
-    let nonce_bytes = u32_array_to_u8_array(nonce);
+    let key_words = u8_array_to_u32_array(key);
+    let nonce_words = u8_array_to_u32_array(nonce);
+    let plaintext_words = u8_array_to_u32_array(plaintext);
+    let ciphertext_words = ChaCha20(key_words, nonce_words, counter, plaintext_words);
+    let ciphertext_bytes = u32_array_to_u8_array(ciphertext_words);
 
-    let ciphertext = ChaCha20(key, nonce, counter, plaintext);
-    let ciphertext_bytes = u32_array_to_u8_array(ciphertext);
-
-    let mut output: [u8; HEADER_LEN + (N * 4)] = [0; HEADER_LEN + (N * 4)];
+    let mut output: [u8; HEADER_LEN + N] = [0; HEADER_LEN + N];
     let mut offset = 0;
 
     for i in 0..HASH_LEN {
@@ -32,7 +31,7 @@ pub fn v_chacha<let N: u32>(
     offset += 32;
 
     for i in 0..NONCE_LEN {
-        output[offset + i] = nonce_bytes[i];
+        output[offset + i] = nonce[i];
     }
     offset += 12;
 
@@ -41,7 +40,7 @@ pub fn v_chacha<let N: u32>(
     }
     offset += 32;
 
-    for i in 0..(N * 4) {
+    for i in 0..N {
         output[offset + i] = ciphertext_bytes[i];
     }
 
@@ -58,6 +57,20 @@ fn u32_array_to_u8_array<let N: u32>(input: [u32; N]) -> [u8; N * 4] {
         output[i * 4 + 1] = ((val >> 8) & 0xFF) as u8;
         output[i * 4 + 2] = ((val >> 16) & 0xFF) as u8;
         output[i * 4 + 3] = ((val >> 24) & 0xFF) as u8;
+    }
+
+    output
+}
+
+/// FIXME: this is a wastefull helper... wish we could cast.
+fn u8_array_to_u32_array<let N: u32>(input: [u8; N]) -> [u32; N / 4] {
+    let mut output: [u32; N / 4] = [0; N / 4];
+
+    for i in 0..(N / 4) {
+        output[i] = (input[i * 4] as u32)
+            | ((input[i * 4 + 1] as u32) << 8)
+            | ((input[i * 4 + 2] as u32) << 16)
+            | ((input[i * 4 + 3] as u32) << 24);
     }
 
     output

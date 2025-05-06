@@ -81,10 +81,11 @@ pub fn bytes_to_hex(bytes: &[u8]) -> String {
 }
 
 #[test]
-fn test_prop_v_chacha_4_bytes() {
+fn test_prop_v_chacha_8_bytes() {
     // FIXME: relative path seems to fail, using deps.
     // Upstream bug?
-    let runner = NoirRunner::try_new(PathBuf::from("/home/nuke/git/noir/verifiable-chacha")).unwrap();
+    let runner =
+        NoirRunner::try_new(PathBuf::from("/home/nuke/git/noir/verifiable-chacha")).unwrap();
 
     let mut test_runner = TestRunner::new(Default::default());
 
@@ -92,21 +93,21 @@ fn test_prop_v_chacha_4_bytes() {
     let nonce = [0u8; NONCE_LEN];
     let counter = 0u32;
 
-    let strategy = prop::array::uniform::<_, 1>(0..u32::MAX);
+    let strategy = prop::array::uniform::<_, 8>(0..u8::MAX);
 
     test_runner
         .run(&strategy, |vector| {
             let input = BTreeMap::from([
-                ("key".to_string(), [0; KEY_LEN / 4].to_noir()),
-                ("nonce".to_string(), [0; NONCE_LEN / 4].len().to_noir()),
-                ("counter".to_string(), 0u32.to_noir()),
-                ("plaintext".to_string(), vector.len().to_noir()),
+                ("key".to_string(), key.to_noir()),
+                ("nonce".to_string(), nonce.to_noir()),
+                ("counter".to_string(), counter.to_noir()),
+                ("plaintext".to_string(), vector.to_noir()),
             ]);
 
             let result = runner.run("test_v_chacha_8_bytes", input).unwrap().unwrap();
 
             let key_hash: [u8; HASH_LEN] = Sha256::digest(&key).into();
-            let plaintext_bytes: &[u8; 4] = unsafe { std::mem::transmute(&vector) };
+            let plaintext_bytes: &[u8; 8] = unsafe { std::mem::transmute(&vector) };
             let plaintext_hash: [u8; HASH_LEN] = Sha256::digest(&plaintext_bytes).into();
 
             let mut cipher = ChaCha20::new(&key.into(), &nonce.into());

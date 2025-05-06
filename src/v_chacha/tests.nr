@@ -1,12 +1,14 @@
-use super::constants::HEADER_LEN;
+use super::constants::{HEADER_LEN, KEY_LEN, NONCE_LEN};
 use super::v_chacha;
 
 #[export]
 fn test_v_chacha_8_bytes(
-    key: [u32; 8],
-    nonce: [u32; 3],
+    key: [u8; KEY_LEN],
+    nonce: [u8; NONCE_LEN],
     counter: u32,
-    plaintext: [u32; 1],
-) -> [u8; HEADER_LEN + 4] {
+    // FIXME: hack to get the compiler happy
+    // leng wanted is 4 times what is below
+    plaintext: [u8; 8],
+) -> [u8; HEADER_LEN + 8] {
     v_chacha(key, nonce, counter, plaintext)
 }
