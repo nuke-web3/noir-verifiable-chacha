@@ -81,7 +81,7 @@ pub fn bytes_to_hex(bytes: &[u8]) -> String {
 }
 
 #[test]
-fn test_prop_v_chacha_8_bytes() {
+fn proptest_v_chacha_200_bytes() {
     // FIXME: relative path seems to fail, using deps.
     // Upstream bug?
     let runner =
@@ -94,7 +94,7 @@ fn test_prop_v_chacha_8_bytes() {
     let counter = 0u32; // We could test rust `cipher.seek()` behavior, but choose not to here
     let key_strategy = prop::array::uniform::<_, KEY_LEN>(0..=u8::MAX);
     let nonce_strategy = prop::array::uniform::<_, NONCE_LEN>(0..=u8::MAX);
-    let plaintext_strategy = prop::array::uniform::<_, 8>(0..=u8::MAX);
+    let plaintext_strategy = prop::array::uniform::<_, 200>(0..=u8::MAX);
 
     let combined_strategy = (key_strategy, nonce_strategy, plaintext_strategy);
 
@@ -108,7 +108,7 @@ fn test_prop_v_chacha_8_bytes() {
             ]);
 
             let result = runner
-                .run("test_v_chacha20_8_bytes", input)
+                .run("test_v_chacha20_200_bytes", input)
                 .unwrap()
                 .unwrap();
 

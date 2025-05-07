@@ -23,10 +23,12 @@ This library is tested to work as of Noir v1.0.0-beta.3
 
 ## Tests
 
-Property testing used to ensure encryption matches [RustCrypto ChaCha20](https://github.com/RustCrypto/stream-ciphers/tree/master/chacha20) run with:
+We ensure identical behavior for `RustCrypto`'s impl of [SHA2_256](https://github.com/RustCrypto/hashes/tree/master/sha2) and [ChaCha20](https://github.com/RustCrypto/stream-ciphers/tree/master/chacha20).
+
+Run test with:
 
 ```bash
-./scripts/fuzz-test.sh
+./scripts/test-all.sh
 ```
 
 ## Acknowledgments

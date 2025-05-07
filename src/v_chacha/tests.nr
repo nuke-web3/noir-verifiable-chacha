@@ -14,11 +14,11 @@ fn test_v_chacha20_matches_rfc(
 }
 
 #[export]
-fn test_v_chacha20_8_bytes(
+fn test_v_chacha20_200_bytes(
     key: [u8; KEY_LEN],
     nonce: [u8; NONCE_LEN],
     counter: u32,
-    plaintext: [u8; 8],
-) -> [u8; HEADER_LEN + 8] {
+    plaintext: [u8; 200],
+) -> [u8; HEADER_LEN + 200] {
     v_chacha20(key, nonce, counter, plaintext)
 }
