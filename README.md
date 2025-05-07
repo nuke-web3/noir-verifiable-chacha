@@ -1,18 +1,21 @@
-# Verifiable ChaCha20
+# Noir Verifiable ChaCha20
 
-This package contains a verifiable encryption extension to the canonical ChaCha20 stream cypher by committing to the:
+**Enables the public to know that some ciphertext is decrypt-able with a specific privkey to some hidden plaintext without knowing the privkey.**
 
-- nonce
-- privkey hash (SHA2_256)
-- plaintext hash (SHA2_256)
-- ciphertext bytes
+This package produces a [Noir proof](https://noir-lang.org/docs/) of [ChaCha20 encryption](https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant) by committing (in byte order) to the:
+
+- privkey hash (SHA2_256),
+  - If static, can act as UID to match on.
+- nonce,
+  - MUST never be reused, else attacks to extract privkey are possible!
+- plaintext hash (SHA2_256),
+- ciphertext
 
 Verifying the proof then and matching the committed metadata for the ciphertext proves that the ciphertext is:
 
-- Correct, no [MAC](https://en.wikipedia.org/wiki/Message_authentication_code) needed (as overall ZKP constrains it)
+- Committed to a (public) privkey hash
+- Correctly constructed ChaCha20 ciphertext from privkey & nonce - no [MAC](https://en.wikipedia.org/wiki/Message_authentication_code) needed (as overall ZKP constrains it)
 - "Anchored" to the plaintext via it's hash
-
-**This enables the public to know that some ciphertext is decrypt-able to some important data without decryption.**
 
 ## Noir Version Compatibility
 
@@ -20,10 +23,12 @@ This library is tested to work as of Noir v1.0.0-beta.3
 
 ## Tests
 
-Property testing is minimally implemented, run with:
+We ensure identical behavior for `RustCrypto`'s impl of [SHA2_256](https://github.com/RustCrypto/hashes/tree/master/sha2) and [ChaCha20](https://github.com/RustCrypto/stream-ciphers/tree/master/chacha20).
+
+Run test with:
 
 ```bash
-./scripts/fuzz-test.sh
+./scripts/test-all.sh
 ```
 
 ## Acknowledgments
