@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use chacha20::ChaCha20;
-use chacha20::cipher::{KeyIvInit, StreamCipher};
+use chacha20::cipher::{KeyIvInit, StreamCipher, StreamCipherSeek};
 use core::fmt;
 use noir_runner::{NoirRunner, ToNoir};
 use proptest::{prelude::prop, test_runner::TestRunner};
@@ -80,54 +80,57 @@ pub fn bytes_to_hex(bytes: &[u8]) -> String {
     digest_hex
 }
 
-// #[test]
-// fn test_prop_v_chacha_8_bytes() {
-//     // FIXME: relative path seems to fail, using deps.
-//     // Upstream bug?
-//     let runner =
-//         NoirRunner::try_new(PathBuf::from("/home/nuke/git/noir/verifiable-chacha")).unwrap();
+#[test]
+fn test_prop_v_chacha_8_bytes() {
+    // FIXME: relative path seems to fail, using deps.
+    // Upstream bug?
+    let runner =
+        NoirRunner::try_new(PathBuf::from("/home/nuke/git/noir/verifiable-chacha")).unwrap();
 
-//     let mut test_runner = TestRunner::new(Default::default());
+    let mut test_runner = TestRunner::new(Default::default());
 
-//     let key = [0u8; KEY_LEN];
-//     let nonce = [0u8; NONCE_LEN];
-//     let counter = 0u32;
+    let key = [0u8; KEY_LEN];
+    let nonce = [0u8; NONCE_LEN];
+    let counter = 0u32;
 
-//     let strategy = prop::array::uniform::<_, 8>(0..u8::MAX);
+    let strategy = prop::array::uniform::<_, 8>(0..=u8::MAX);
 
-//     test_runner
-//         .run(&strategy, |vector| {
-//             let input = BTreeMap::from([
-//                 ("key".to_string(), key.to_noir()),
-//                 ("nonce".to_string(), nonce.to_noir()),
-//                 ("counter".to_string(), counter.to_noir()),
-//                 ("plaintext".to_string(), vector.to_noir()),
-//             ]);
+    test_runner
+        .run(&strategy, |vector| {
+            let input = BTreeMap::from([
+                ("key".to_string(), key.to_noir()),
+                ("nonce".to_string(), nonce.to_noir()),
+                ("counter".to_string(), counter.to_noir()),
+                ("plaintext".to_string(), vector.to_noir()),
+            ]);
 
-//             let result = runner.run("test_v_chacha20_8_bytes", input).unwrap().unwrap();
+            let result = runner
+                .run("test_v_chacha20_8_bytes", input)
+                .unwrap()
+                .unwrap();
 
-//             let key_hash: [u8; HASH_LEN] = Sha256::digest(&key).into();
-//             let plaintext_bytes: &[u8; 8] = unsafe { std::mem::transmute(&vector) };
-//             let plaintext_hash: [u8; HASH_LEN] = Sha256::digest(&plaintext_bytes).into();
+            let key_hash: [u8; HASH_LEN] = Sha256::digest(&key).into();
+            let plaintext_bytes = &vector;
+            let plaintext_hash: [u8; HASH_LEN] = Sha256::digest(&plaintext_bytes).into();
 
-//             let mut cipher = ChaCha20::new(&key.into(), &nonce.into());
-//             let mut ciphertext = plaintext_bytes.clone();
-//             cipher.seek(counter); // Default to 0 if not set, we want to be explicit to be sure
-//             cipher.apply_keystream(&mut ciphertext);
+            let mut cipher = ChaCha20::new(&key.into(), &nonce.into());
+            let mut ciphertext = plaintext_bytes.clone();
+            cipher.seek(counter); // Default to 0 if not set, we want to be explicit to be sure
+            cipher.apply_keystream(&mut ciphertext);
 
-//             let expected = [
-//                 &key_hash[..],
-//                 &nonce[..],
-//                 &plaintext_hash[..],
-//                 &ciphertext[..plaintext_bytes.len()],
-//             ]
-//             .concat();
-//             assert_eq!(result, expected.to_noir());
+            let expected = [
+                &key_hash[..],
+                &nonce[..],
+                &plaintext_hash[..],
+                &ciphertext[..plaintext_bytes.len()],
+            ]
+            .concat();
+            assert_eq!(result, expected.to_noir());
 
-//             Ok(())
-//         })
-//         .unwrap();
-// }
+            Ok(())
+        })
+        .unwrap();
+}
 
 #[test]
 #[allow(non_snake_case)]
@@ -207,3 +210,4 @@ fn matches_rustcrypto_chacha20_for_RFC_inputs() {
 
     assert_eq!(noir_result, expected.to_noir());
 }
+
